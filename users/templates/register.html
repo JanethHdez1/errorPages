@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-light d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow-lg" style="width: 600px;">
+        <h2 class="text-center mb-3">Registro</h2>
+        <form method="post" onsubmit="return validateLogin()">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.as_p }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+        </form>
+    </div>
+
+    <script>
+        Swal.fire({
+            icon: 'info',
+            title: 'Cargando...',
+            text: 'Por favor espera',
+            showConfirmButton: false,
+            timer: 1500
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            {% if form.errors %}
+            let errorMessage = `{% for field in form %}{% for error in field.errors %}{{ error|escapejs }}\n{% endfor %}{% endfor %}`;
+
+            Swal.fire({
+                icon: "error",
+                title: "Error en el formulario",
+                text: errorMessage,
+                confirmButtonText: 'Aceptar'
+            });
+            {% endif %}
+        });
+
+        function validateLogin() {
+            let control_number = document.getElementById("id_control_number").value.trim();
+            let tel = document.getElementById("id_tel").value;
+            let email = document.getElementById("id_email").value;
+            let password1 = document.getElementById("id_password1").value;
+            let password2 = document.getElementById("id_password2").value;
+
+            const regex_control_number = /^(I)?\d{5}[a-zA-Z]{2}\d{3}$/;
+            const regex_tel = /^\d{10}$/;
+            const regex_email = /^[a-zA-Z0-9._%+-]+@utez.edu.mx$/;
+            const regex_numero = /\d/;
+            const regex_simbolo = /[!#$*%&?]/;
+            const regex_letra_mayuscula = /[A-Z]/;
+
+            if (!regex_control_number.test(control_number)) {
+                showError("Número de matrícula inválido. Debe ser de la UTEZ.");
+                return false;
+            }
+
+            if (!regex_tel.test(tel)) {
+                showError("Número de teléfono inválido. Debe contener 10 dígitos.");
+                return false;
+            }
+
+            if (!regex_email.test(email)) {
+                showError("El correo debe ser del dominio @utez.edu.mx.");
+                return false;
+            }
+
+            if (password1.length < 8) {
+                showError("La contraseña es demasiado corta, debe tener al menos 8 caracteres.");
+                return false;
+            }
+
+            if (!regex_numero.test(password1) || !regex_simbolo.test(password1) || !regex_letra_mayuscula.test(password1)) {
+                showError("La contraseña debe contener al menos 1 número, 1 letra mayúscula y 1 carácter especial.");
+                return false;
+            }
+
+            if (password1 !== password2) {
+                showError("Las contraseñas no coinciden.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function showError(message) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: message,
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
+    {% include 'mensaje.html' %}
+</body>
+
+</html>
