@@ -3,37 +3,29 @@ from django import forms
 
 class categoriaForm(forms.ModelForm):
     class Meta:
-        model = Categoria
-
-        fields = ['nombre', 'imagen']
-
+        model=Categoria
+        
+        #Que campos quiero que se muestren en el formulario
+        fields = ['nombre','imagen']
+        
         widgets = {
-            'nombre': forms.TextInput(
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': 'Ingrese el nombre de la categoría'
-                }
-            ),
-            'imagen': forms.URLInput(
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': 'Ingrese la URL de la imagen de la categoría'
-                }
-            )
+            'nombre': forms.TextInput(attrs={'class':'form-control','placeholder':'Ingresa aqui el nombre del categoria'}),
+            'imagen': forms.URLInput(attrs={'class':'form-control','placeholder':'Ingresa aqui la URL de la imagen del categoria'}),
         }
 
-        labels = {
-            'nombre': 'Nombre de la categoría',
-            'imagen': 'URL de la imagen de la categoría',
-        }
+    #etiquetas
+    labels = {
+        'nombre': 'Nombre de la categoria',
+        'imagen': 'URL de la Imagen'
+    }
 
-        error_messages = {
-            'nombre': {
-                'required': 'Este campo es obligatorio',
-                'unique': 'Esta categoría ya existe'
-            },
-            'imagen': {
-                'required': 'Este campo es obligatorio',
-                'invalid': 'Ingrese una URL válida'
-            }
+    #personalizar los mensajes de error
+    error_messages = {
+        'nombre': {
+            'required': 'El campo nombre es obligatorio',
+            "invalid": "El nombre no es valido"
+        },
+        'imagen': {
+            'required': 'El campo Imagen es obligatorio'
         }
+    }
