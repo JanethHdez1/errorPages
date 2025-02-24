@@ -30,7 +30,7 @@ def registrar_categoria(request):
         
     else:
         form = categoriaForm()
-    return render(request, 'registrar.html', {'form': form})
+    return render(request, 'agregar_post.html', {'form': form})
 
 
 def agregar_categoria(request):
