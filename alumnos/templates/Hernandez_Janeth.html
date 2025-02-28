@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alumnos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow p-4">
+                    <h2 class="text-center text-primary mb-4">Agregar Nuevo Alumno</h2>
+                    <form id="alumno-form" class="needs-validation">
+                        <input type="hidden" id="idAlumno">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre:</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label">Apellidos:</label>
+                            <input type="text" class="form-control" id="apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edad" class="form-label">Edad:</label>
+                            <input type="number" class="form-control" id="edad" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="matricula" class="form-label">Matrícula:</label>
+                            <input type="text" class="form-control" id="matricula" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo:</label>
+                            <input type="email" class="form-control" id="correo" required>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Registrar Alumno</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow p-4">
+                    <h2 class="text-center text-primary mb-4">Lista de Alumnos</h2>
+                    <ul id="alumnos" class="list-group overflow-auto" style="max-height: 500px;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarAlumnos();
+            document.getElementById("alumno-form").addEventListener("submit", agregarEditar);
+        });
+
+        async function agregarEditar(event) {
+            event.preventDefault();
+            const id = document.getElementById("idAlumno").value;
+            const alumno = {
+                nombre: document.getElementById("nombre").value,
+                apellido: document.getElementById("apellido").value,
+                edad: document.getElementById("edad").value,
+                matricula: document.getElementById("matricula").value,
+                correo: document.getElementById("correo").value
+            };
+            const method = id ? "PUT" : "POST";
+            const url = id ? `/alumnos/api/${id}/` : "/alumnos/api/";
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(alumno)
+                });
+
+                Swal.fire({
+                    title: id ? "Alumno actualizado" : "Alumno agregado",
+                    text: "La información se guardó correctamente",
+                    icon: "success"
+                });
+
+                document.getElementById("alumno-form").reset();
+                document.getElementById("idAlumno").value = "";
+                cargarAlumnos();
+
+            } catch (error) {
+                Swal.fire("Error", "Hubo un problema al guardar los datos", "error");
+                console.error("Error:", error);
+            }
+        }
+
+        function editarAlumno(alumno) {
+            document.getElementById("idAlumno").value = alumno.id;
+            document.getElementById("nombre").value = alumno.nombre;
+            document.getElementById("apellido").value = alumno.apellido;
+            document.getElementById("edad").value = alumno.edad;
+            document.getElementById("matricula").value = alumno.matricula;
+            document.getElementById("correo").value = alumno.correo;
+        }
+
+        async function eliminarAlumno(id) {
+            Swal.fire({
+                title: "¿Estás seguro?",
+                text: "Se eliminará el alumno seleccionado",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Sí, eliminarlo"
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`/alumnos/api/${id}/`, { method: "DELETE" });
+                        if (!response.ok) throw new Error("Error al eliminar");
+
+                        Swal.fire("Eliminado", "El alumno ha sido eliminado", "success");
+                        cargarAlumnos();
+                    } catch (error) {
+                        Swal.fire("Error", "No se pudo eliminar el alumno.", "error");
+                        console.error("Error:", error);
+                    }
+                }
+            });
+        }
+
+        async function cargarAlumnos() {
+            try {
+                const response = await fetch("/alumnos/api/");
+                if (!response.ok) throw new Error("Error al cargar alumnos");
+                const alumnos = await response.json();
+
+                const listaAlumnos = document.getElementById("alumnos");
+                listaAlumnos.innerHTML = "";
+
+                alumnos.forEach(alumno => {
+                    const li = document.createElement("li");
+                    li.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
+                    li.innerHTML = `
+                        <span>${alumno.nombre} ${alumno.apellido}</span>
+                        <div>
+                            <button class="btn btn-warning btn-sm me-2" onclick='editarAlumno(${JSON.stringify(alumno)})'>
+                                <img src="https://cdn-icons-png.flaticon.com/512/14466/14466328.png" alt="Editar" width="20">
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarAlumno(${alumno.id})">
+                                <img src="https://cdn-icons-png.flaticon.com/512/4914/4914894.png" alt="Eliminar" width="20">
+                            </button>
+                        </div>`;
+                    listaAlumnos.appendChild(li);
+                });
+
+            } catch (error) {
+                Swal.fire("Error", "No se pudieron cargar los alumnos.", "error");
+                console.error("Error:", error);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
